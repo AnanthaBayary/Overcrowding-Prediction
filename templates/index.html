@@ -5,93 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prison Overcrowding Predictor</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
         }
-        
-        .container {
+        .container { max-width: 1000px; margin: 0 auto; }
+        .card {
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            max-width: 500px;
-            width: 100%;
             overflow: hidden;
         }
-        
         .header {
-            background: linear-gradient(135deg, #2c3e50, #1a1a2e);
+            background: linear-gradient(135deg, #1a1a2e, #2c3e50);
             color: white;
             padding: 30px;
             text-align: center;
         }
-        
-        .header h1 {
-            font-size: 24px;
-            margin-bottom: 10px;
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { font-size: 14px; opacity: 0.8; }
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 10px;
         }
-        
-        .header p {
-            font-size: 14px;
-            opacity: 0.8;
-        }
-        
-        .content {
-            padding: 30px;
-        }
-        
-        .input-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #333;
-        }
-        
-        input {
+        .content { padding: 30px; }
+        .form-group { margin-bottom: 25px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; }
+        select {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #ddd;
             border-radius: 10px;
             font-size: 16px;
-            transition: border-color 0.3s;
-        }
-        
-        input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        
-        button {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
+            background: white;
             cursor: pointer;
-            transition: transform 0.2s;
         }
+        select:focus { outline: none; border-color: #2a5298; }
+        select:disabled { background: #f5f5f5; cursor: not-allowed; }
         
-        button:hover {
-            transform: translateY(-2px);
+        .facility-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
         }
+        .facility-card:hover {
+            border-color: #2a5298;
+            transform: translateX(5px);
+            background: #e8f0fe;
+        }
+        .facility-card.selected { border-color: #22c55e; background: #f0fdf4; }
+        .facility-name { font-weight: bold; font-size: 16px; margin-bottom: 8px; color: #1a1a2e; }
+        .facility-details { font-size: 13px; color: #666; display: flex; gap: 15px; flex-wrap: wrap; }
+        .facility-details span { background: white; padding: 2px 8px; border-radius: 15px; }
+        
+        .loading { text-align: center; padding: 30px; color: #666; }
+        .empty-message { text-align: center; padding: 30px; color: #999; }
         
         .result {
             margin-top: 25px;
@@ -100,30 +79,11 @@
             text-align: center;
             animation: fadeIn 0.5s ease;
         }
-        
-        .result.overcrowded {
-            background: #fee2e2;
-            border: 2px solid #ef4444;
-        }
-        
-        .result.safe {
-            background: #dcfce7;
-            border: 2px solid #22c55e;
-        }
-        
-        .prediction-text {
-            font-size: 28px;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-        
-        .overcrowded .prediction-text {
-            color: #ef4444;
-        }
-        
-        .safe .prediction-text {
-            color: #22c55e;
-        }
+        .result.overcrowded { background: #fee2e2; border: 2px solid #ef4444; }
+        .result.safe { background: #dcfce7; border: 2px solid #22c55e; }
+        .prediction-text { font-size: 28px; font-weight: bold; margin-bottom: 15px; }
+        .overcrowded .prediction-text { color: #ef4444; }
+        .safe .prediction-text { color: #22c55e; }
         
         .stats {
             display: grid;
@@ -133,136 +93,178 @@
             padding-top: 15px;
             border-top: 1px solid #ddd;
         }
+        .stat { text-align: center; }
+        .stat-label { font-size: 12px; color: #666; margin-bottom: 5px; }
+        .stat-value { font-size: 20px; font-weight: bold; color: #333; }
         
-        .stat {
-            text-align: center;
-        }
-        
-        .stat-label {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-        
-        .stat-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .risk-high {
-            color: #ef4444;
-            font-weight: bold;
-        }
-        
-        .risk-medium {
-            color: #f59e0b;
-            font-weight: bold;
-        }
-        
-        .risk-low {
-            color: #22c55e;
-            font-weight: bold;
-        }
-        
-        .error {
-            background: #fee2e2;
-            color: #ef4444;
-            padding: 12px;
-            border-radius: 10px;
-            margin-top: 20px;
-            text-align: center;
-        }
-        
-        .badge {
-            display: inline-block;
-            background: #f0f0f0;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            margin-top: 10px;
-        }
+        .error { background: #fee2e2; color: #ef4444; padding: 15px; border-radius: 10px; text-align: center; }
+        .hidden { display: none; }
         
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        
-        .footer {
-            background: #f8f9fa;
-            padding: 15px;
-            text-align: center;
-            font-size: 12px;
-            color: #666;
-        }
+        .footer { background: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #666; }
+        .result-loading { text-align: center; padding: 20px; color: #666; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🏛️ Prison Overcrowding Predictor</h1>
-            <p>Enter prison details to check overcrowding status</p>
-            <div class="badge">Powered by Random Forest (95% Accuracy)</div>
-        </div>
-        
-        <div class="content">
-            <form method="POST" action="/predict">
-                <div class="input-group">
-                    <label>👥 Current Population</label>
-                    <input type="number" name="population" placeholder="Enter number of inmates" required>
-                </div>
-                
-                <div class="input-group">
-                    <label>🏠 Total Capacity</label>
-                    <input type="number" name="capacity" placeholder="Enter maximum capacity" required>
-                </div>
-                
-                <button type="submit">🔍 Predict Overcrowding</button>
-            </form>
-            
-            {% if prediction %}
-            <div class="result {{ result_class }}">
-                <div class="prediction-text">{{ prediction }}</div>
-                <div>Probability: <strong>{{ probability }}%</strong></div>
-                <div>Risk Level: <span class="risk-{{ risk|lower }}">{{ risk }}</span></div>
-                
-                <div class="stats">
-                    <div class="stat">
-                        <div class="stat-label">Population</div>
-                        <div class="stat-value">{{ population }}</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-label">Capacity</div>
-                        <div class="stat-value">{{ capacity }}</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-label">Available Slots</div>
-                        <div class="stat-value">{{ available_slots }}</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-label">Utilization</div>
-                        <div class="stat-value">{{ utilization }}%</div>
-                    </div>
-                </div>
+        <div class="card">
+            <div class="header">
+                <h1>🏛️ Prison Overcrowding Predictor</h1>
+                <p>Search for a prison by location and check overcrowding status</p>
+                <div class="badge">Powered by Random Forest | AI/ML Project</div>
             </div>
-            {% endif %}
             
-            {% if error %}
-            <div class="error">
-                ⚠️ {{ error }}
+            <div class="content">
+                <div class="form-group">
+                    <label>📍 Step 1: Select State</label>
+                    <select id="state" onchange="onStateChange()">
+                        <option value="">-- Select State --</option>
+                        {% for state in states %}
+                        <option value="{{ state }}">{{ state }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>🏙️ Step 2: Select City</label>
+                    <select id="city" onchange="onCityChange()" disabled>
+                        <option value="">-- Select State First --</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>🏛️ Step 3: Select Facility</label>
+                    <div id="facilitiesList">
+                        <div class="empty-message">Select a state and city to view facilities</div>
+                    </div>
+                </div>
+                
+                <div id="resultSection" class="hidden"></div>
             </div>
-            {% endif %}
-        </div>
-        
-        <div class="footer">
-            AI/ML Project | Prison Overcrowding Prediction System
+            
+            <div class="footer">
+                AI/ML Project | Prison Overcrowding Prediction System
+            </div>
         </div>
     </div>
+    
+    <script>
+        function clearResults() {
+            const resultSection = document.getElementById('resultSection');
+            resultSection.classList.add('hidden');
+            resultSection.innerHTML = '';
+            document.querySelectorAll('.facility-card').forEach(card => card.classList.remove('selected'));
+        }
+        
+        function displayResult(data) {
+            const resultSection = document.getElementById('resultSection');
+            resultSection.innerHTML = `
+                <div class="result ${data.result_class}">
+                    <div class="prediction-text">${data.prediction}</div>
+                    <div style="margin-bottom: 10px;">
+                        🏛️ <strong>${data.facility_name}</strong><br>
+                        📍 ${data.facility_city}, ${data.facility_state} | 🆔 ID: ${data.facility_id}
+                    </div>
+                    <div class="stats">
+                        <div class="stat"><div class="stat-label">Population</div><div class="stat-value">${data.population}</div></div>
+                        <div class="stat"><div class="stat-label">Capacity</div><div class="stat-value">${data.capacity}</div></div>
+                        <div class="stat"><div class="stat-label">Available Slots</div><div class="stat-value">${data.available_slots}</div></div>
+                        <div class="stat"><div class="stat-label">Utilization</div><div class="stat-value">${data.utilization}%</div></div>
+                    </div>
+                </div>
+            `;
+            resultSection.classList.remove('hidden');
+        }
+        
+        function onStateChange() { clearResults(); loadCities(); }
+        function onCityChange() { clearResults(); loadFacilities(); }
+        
+        function loadCities() {
+            const state = document.getElementById('state').value;
+            const citySelect = document.getElementById('city');
+            const facilitiesDiv = document.getElementById('facilitiesList');
+            if (!state) {
+                citySelect.disabled = true;
+                citySelect.innerHTML = '<option value="">-- Select State First --</option>';
+                facilitiesDiv.innerHTML = '<div class="empty-message">Select a state and city to view facilities</div>';
+                return;
+            }
+            fetch('/get_cities', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({state: state})
+            })
+            .then(res => res.json())
+            .then(data => {
+                citySelect.disabled = false;
+                citySelect.innerHTML = '<option value="">-- Select City --</option>';
+                data.cities.forEach(city => citySelect.innerHTML += `<option value="${city}">${city}</option>`);
+                facilitiesDiv.innerHTML = '<div class="empty-message">Select a city to view facilities</div>';
+            });
+        }
+        
+        function loadFacilities() {
+            const state = document.getElementById('state').value;
+            const city = document.getElementById('city').value;
+            const facilitiesDiv = document.getElementById('facilitiesList');
+            if (!state || !city) return;
+            facilitiesDiv.innerHTML = '<div class="loading">Loading facilities...</div>';
+            fetch('/get_facilities', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({state: state, city: city})
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.facilities.length === 0) {
+                    facilitiesDiv.innerHTML = '<div class="empty-message">No facilities found in this city</div>';
+                    return;
+                }
+                facilitiesDiv.innerHTML = '';
+                data.facilities.forEach(facility => {
+                    const statusText = facility.is_overcrowded ? '🔴 OVERCROWDED' : '🟢 NOT overcrowded';
+                    const div = document.createElement('div');
+                    div.className = 'facility-card';
+                    div.innerHTML = `
+                        <div class="facility-name">🏛️ ${facility.name}</div>
+                        <div class="facility-details">
+                            <span>👥 Population: ${facility.population.toLocaleString()}</span>
+                            <span>🏠 Capacity: ${facility.capacity.toLocaleString()}</span>
+                            <span>📊 Available: ${facility.available_slots.toLocaleString()}</span>
+                            <span>${statusText}</span>
+                        </div>
+                    `;
+                    div.onclick = (function(f) { return function() { getPrediction(f); }; })(facility);
+                    facilitiesDiv.appendChild(div);
+                });
+            });
+        }
+        
+        function getPrediction(facility) {
+            const resultSection = document.getElementById('resultSection');
+            resultSection.innerHTML = '<div class="result-loading">🔮 Getting prediction...</div>';
+            resultSection.classList.remove('hidden');
+            document.querySelectorAll('.facility-card').forEach(card => card.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            fetch('/predict_ajax', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    facility_id: facility.id,
+                    population: facility.population,
+                    capacity: facility.capacity
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) displayResult(data);
+                else resultSection.innerHTML = `<div class="error">⚠️ ${data.error}</div>`;
+            })
+            .catch(() => resultSection.innerHTML = '<div class="error">⚠️ Error getting prediction</div>');
+        }
+    </script>
 </body>
 </html>
