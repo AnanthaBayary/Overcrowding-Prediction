@@ -5,28 +5,153 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prison Overcrowding Predictor</title>
     <style>
+        /* ============================================
+           LIGHT MODE (Default)
+        ============================================ */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --card-bg: white;
+            --text-color: #333;
+            --text-secondary: #666;
+            --header-bg: linear-gradient(135deg, #1a1a2e, #2c3e50);
+            --header-text: white;
+            --border-color: #ddd;
+            --facility-bg: #f8f9fa;
+            --facility-hover: #e8f0fe;
+            --footer-bg: #f8f9fa;
+            --result-overcrowded-bg: #fee2e2;
+            --result-overcrowded-border: #ef4444;
+            --result-safe-bg: #dcfce7;
+            --result-safe-border: #22c55e;
+            --error-bg: #fee2e2;
+            --error-text: #ef4444;
+            --select-bg: white;
+            --select-text: #333;
+            --toggle-bg: #ccc;
+            --toggle-knob: white;
+        }
+        
+        /* ============================================
+           DARK MODE
+        ============================================ */
+        body.dark-mode {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --card-bg: #1e293b;
+            --text-color: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --header-bg: linear-gradient(135deg, #0f0f1a, #1a1a2e);
+            --header-text: #e2e8f0;
+            --border-color: #334155;
+            --facility-bg: #334155;
+            --facility-hover: #475569;
+            --footer-bg: #0f172a;
+            --result-overcrowded-bg: #450a0a;
+            --result-overcrowded-border: #ef4444;
+            --result-safe-bg: #052e16;
+            --result-safe-border: #22c55e;
+            --error-bg: #450a0a;
+            --error-text: #f87171;
+            --select-bg: #334155;
+            --select-text: #e2e8f0;
+            --toggle-bg: #4a5568;
+            --toggle-knob: #e2e8f0;
+        }
+        
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: var(--bg-gradient);
             min-height: 100vh;
             padding: 20px;
+            transition: background 0.3s ease;
         }
-        .container { max-width: 1000px; margin: 0 auto; }
+        
+        .container { max-width: 800px; margin: 0 auto; }
+        
         .card {
-            background: white;
+            background: var(--card-bg);
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.2);
             overflow: hidden;
+            transition: background 0.3s ease;
         }
+        
         .header {
-            background: linear-gradient(135deg, #1a1a2e, #2c3e50);
-            color: white;
+            background: var(--header-bg);
+            color: var(--header-text);
             padding: 30px;
             text-align: center;
+            position: relative;
+            transition: background 0.3s ease;
         }
+        
+        /* ============================================
+           SLIDING TOGGLE SWITCH
+        ============================================ */
+        .theme-switch-wrapper {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 30px;
+        }
+        
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--toggle-bg);
+            transition: 0.3s;
+            border-radius: 30px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 24px;
+            width: 24px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--toggle-knob);
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: #22c55e;
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(30px);
+        }
+        
+        .theme-label {
+            font-size: 12px;
+            color: var(--header-text);
+            opacity: 0.8;
+        }
+        
         .header h1 { font-size: 28px; margin-bottom: 10px; }
         .header p { font-size: 14px; opacity: 0.8; }
+        
         .badge {
             display: inline-block;
             background: rgba(255,255,255,0.2);
@@ -35,43 +160,59 @@
             font-size: 12px;
             margin-top: 10px;
         }
+        
         .content { padding: 30px; }
         .form-group { margin-bottom: 25px; }
-        label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-color);
+        }
+        
         select {
             width: 100%;
             padding: 12px 15px;
-            border: 2px solid #ddd;
+            border: 2px solid var(--border-color);
             border-radius: 10px;
             font-size: 16px;
-            background: white;
+            background: var(--select-bg);
+            color: var(--select-text);
             cursor: pointer;
+            transition: all 0.3s ease;
         }
-        select:focus { outline: none; border-color: #2a5298; }
-        select:disabled { background: #f5f5f5; cursor: not-allowed; }
         
+        select:focus { outline: none; border-color: #2a5298; }
+        select:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        /* Facility Cards */
         .facility-card {
-            background: #f8f9fa;
+            background: var(--facility-bg);
             border-radius: 12px;
             padding: 15px;
             margin-bottom: 12px;
             cursor: pointer;
             transition: all 0.3s;
             border: 2px solid transparent;
+            color: var(--text-color);
         }
+        
         .facility-card:hover {
             border-color: #2a5298;
             transform: translateX(5px);
-            background: #e8f0fe;
+            background: var(--facility-hover);
         }
-        .facility-card.selected { border-color: #22c55e; background: #f0fdf4; }
-        .facility-name { font-weight: bold; font-size: 16px; margin-bottom: 8px; color: #1a1a2e; }
-        .facility-details { font-size: 13px; color: #666; display: flex; gap: 15px; flex-wrap: wrap; }
-        .facility-details span { background: white; padding: 2px 8px; border-radius: 15px; }
         
-        .loading { text-align: center; padding: 30px; color: #666; }
-        .empty-message { text-align: center; padding: 30px; color: #999; }
+        .facility-card.selected { border-color: #22c55e; background: var(--facility-hover); }
+        .facility-name { font-weight: bold; font-size: 16px; margin-bottom: 8px; }
+        .facility-details { font-size: 13px; display: flex; gap: 15px; flex-wrap: wrap; }
+        .facility-details span { background: var(--card-bg); padding: 2px 8px; border-radius: 15px; }
         
+        .loading { text-align: center; padding: 30px; color: var(--text-secondary); }
+        .empty-message { text-align: center; padding: 30px; color: var(--text-secondary); }
+        
+        /* Results */
         .result {
             margin-top: 25px;
             padding: 20px;
@@ -79,8 +220,10 @@
             text-align: center;
             animation: fadeIn 0.5s ease;
         }
-        .result.overcrowded { background: #fee2e2; border: 2px solid #ef4444; }
-        .result.safe { background: #dcfce7; border: 2px solid #22c55e; }
+        
+        .result.overcrowded { background: var(--result-overcrowded-bg); border: 2px solid var(--result-overcrowded-border); }
+        .result.safe { background: var(--result-safe-bg); border: 2px solid var(--result-safe-border); }
+        
         .prediction-text { font-size: 28px; font-weight: bold; margin-bottom: 15px; }
         .overcrowded .prediction-text { color: #ef4444; }
         .safe .prediction-text { color: #22c55e; }
@@ -91,27 +234,50 @@
             gap: 15px;
             margin-top: 20px;
             padding-top: 15px;
-            border-top: 1px solid #ddd;
+            border-top: 1px solid var(--border-color);
         }
-        .stat { text-align: center; }
-        .stat-label { font-size: 12px; color: #666; margin-bottom: 5px; }
-        .stat-value { font-size: 20px; font-weight: bold; color: #333; }
         
-        .error { background: #fee2e2; color: #ef4444; padding: 15px; border-radius: 10px; text-align: center; }
+        .stat { text-align: center; }
+        .stat-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 5px; }
+        .stat-value { font-size: 20px; font-weight: bold; color: var(--text-color); }
+        
+        .error { background: var(--error-bg); color: var(--error-text); padding: 15px; border-radius: 10px; text-align: center; }
         .hidden { display: none; }
         
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .footer { background: #f8f9fa; padding: 15px; text-align: center; font-size: 12px; color: #666; }
-        .result-loading { text-align: center; padding: 20px; color: #666; }
+        
+        .footer {
+            background: var(--footer-bg);
+            padding: 15px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-secondary);
+            transition: background 0.3s ease;
+        }
+        
+        .result-loading { text-align: center; padding: 20px; color: var(--text-secondary); }
+        
+        /* Sun and Moon Icons */
+        .light-icon, .dark-icon {
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="card">
             <div class="header">
+                <div class="theme-switch-wrapper">
+                    <span class="light-icon">☀️</span>
+                    <label class="theme-switch">
+                        <input type="checkbox" id="theme-toggle-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="dark-icon">🌙</span>
+                </div>
                 <h1>🏛️ Prison Overcrowding Predictor</h1>
                 <p>Search for a prison by location and check overcrowding status</p>
                 <div class="badge">Powered by Random Forest | AI/ML Project</div>
@@ -152,6 +318,40 @@
     </div>
     
     <script>
+        // ============================================
+        // SLIDING TOGGLE - DARK/LIGHT MODE
+        // ============================================
+        const toggleSwitch = document.getElementById('theme-toggle-checkbox');
+        
+        // Function to set theme
+        function setTheme(isDark) {
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+                toggleSwitch.checked = true;
+                localStorage.setItem('darkMode', 'true');
+            } else {
+                document.body.classList.remove('dark-mode');
+                toggleSwitch.checked = false;
+                localStorage.setItem('darkMode', 'false');
+            }
+        }
+        
+        // Load saved theme preference
+        const savedTheme = localStorage.getItem('darkMode');
+        if (savedTheme === 'true') {
+            setTheme(true);
+        } else {
+            setTheme(false);
+        }
+        
+        // Listen for toggle changes
+        toggleSwitch.addEventListener('change', function(e) {
+            setTheme(e.target.checked);
+        });
+        
+        // ============================================
+        // CLEAR RESULTS
+        // ============================================
         function clearResults() {
             const resultSection = document.getElementById('resultSection');
             resultSection.classList.add('hidden');
@@ -159,6 +359,9 @@
             document.querySelectorAll('.facility-card').forEach(card => card.classList.remove('selected'));
         }
         
+        // ============================================
+        // DISPLAY PREDICTION RESULT
+        // ============================================
         function displayResult(data) {
             const resultSection = document.getElementById('resultSection');
             resultSection.innerHTML = `
@@ -179,6 +382,9 @@
             resultSection.classList.remove('hidden');
         }
         
+        // ============================================
+        // STATE & CITY HANDLERS
+        // ============================================
         function onStateChange() { clearResults(); loadCities(); }
         function onCityChange() { clearResults(); loadFacilities(); }
         
@@ -243,12 +449,17 @@
             });
         }
         
+        // ============================================
+        // GET PREDICTION
+        // ============================================
         function getPrediction(facility) {
             const resultSection = document.getElementById('resultSection');
             resultSection.innerHTML = '<div class="result-loading">🔮 Getting prediction...</div>';
             resultSection.classList.remove('hidden');
+            
             document.querySelectorAll('.facility-card').forEach(card => card.classList.remove('selected'));
             event.currentTarget.classList.add('selected');
+            
             fetch('/predict_ajax', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -260,8 +471,11 @@
             })
             .then(res => res.json())
             .then(data => {
-                if (data.success) displayResult(data);
-                else resultSection.innerHTML = `<div class="error">⚠️ ${data.error}</div>`;
+                if (data.success) {
+                    displayResult(data);
+                } else {
+                    resultSection.innerHTML = `<div class="error">⚠️ ${data.error}</div>`;
+                }
             })
             .catch(() => resultSection.innerHTML = '<div class="error">⚠️ Error getting prediction</div>');
         }
